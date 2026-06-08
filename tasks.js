@@ -17,7 +17,7 @@ window.DEFAULT_TASKS = [
     "time": "",
     "explain": "提出フォームのリンク",
     "important": false,
-    "status": 2,
+    "status": 1,
     "complete": false,
     "completedAt": null
   },
@@ -39,7 +39,7 @@ window.DEFAULT_TASKS = [
     "time": "",
     "explain": "",
     "important": false,
-    "status": 2,
+    "status": 1,
     "complete": false,
     "completedAt": null
   },
@@ -72,7 +72,7 @@ window.DEFAULT_TASKS = [
     "time": "",
     "explain": "",
     "important": false,
-    "status": 2,
+    "status": 1,
     "complete": false,
     "completedAt": null
   },

@@ -4,6 +4,7 @@ let currentDetailId = null;
 let confirmCallback = null;
 let fileHandle = null;
 let hasPermission = false;
+let notifucationTasks = [];
 
 initializeFileSystem();
 loadTasks();
@@ -121,6 +122,10 @@ document.getElementById("clearTimeBtn").onclick = () => {
   document.getElementById("taskTime").value = "";
 };
 
+document.getElementById("clearNotificationDateTimeBtn").onclick = () => {
+  document.getElementById("taskNotificationDateTime").value = "";
+};
+
 document.getElementById("cancelTaskBtn").onclick = () => {
   closeModal("taskModal");
 };
@@ -145,7 +150,8 @@ document.getElementById("saveTaskBtn").onclick = () => {
     complete: Number(document.getElementById("taskStatus").value) === 3,
     completedAt: Number(document.getElementById("taskStatus").value) === 3
       ? new Date().toISOString()
-      : null
+      : null,
+    notificationDateTime: document.getElementById("taskNotificationDateTime").value || null
   };
 
   if(currentEditId){
@@ -602,6 +608,27 @@ function openDB() {
   });
 }
 
+// タスク通知機能
+function checkNotifications(){
+
+  const notificationTasks = [];
+
+  let list = tasks.filter(t =>
+    t.notificationDateTime &&
+    !t.complete
+  );
+
+  
+  list.sort((a, b) => {
+    return new Date(a.notificationDateTime) - new Date(b.notificationDateTime);
+  });
+
+  const now = new Date();
+  passedTasks = list.filter(t =>
+    t.notificationDateTime <= now.toISOString()
+  );
+  
+}
 
 /* コード入力 */
 document.getElementById("codeInputBtn").onclick = () => {
