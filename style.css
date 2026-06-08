@@ -248,6 +248,10 @@ textarea{
   display:inline-block;
 }
 
+.task-main{
+  width: 80%;
+}
+
 @media (max-width: 900px){
 
   .task-two-column{
