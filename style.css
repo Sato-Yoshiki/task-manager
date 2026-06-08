@@ -1,3 +1,12 @@
+:root{
+  --trad-green:#005B47;
+  --fresh-green:#B3D056;
+  --important-color:#F6C8D9; /*functional pink2*/
+  --todo-color:#FFDB66; /*functional yellow1*/
+  --doing-color:#66B4EA; /*functional blue1*/
+  --complete-color:#939393; /*functional gray1*/
+}
+
 body{
   margin:0;
   font-family:sans-serif;
@@ -5,7 +14,7 @@ body{
 }
 
 header{
-  background:#005B47;
+  background:var(--trad-green);
   color:white;
   padding:20px;
 }
@@ -22,7 +31,7 @@ button{
 }
 
 .json-load-button{
-    background:#B3D056;
+    background:var(--fresh-green);
     padding:6px 10px;
     border-radius:6px;
     cursor:pointer;
@@ -33,7 +42,7 @@ button{
 #addTaskBtn,
 #codeInputBtn,
 #codeExportBtn{
-  background:#B3D056;
+  background:var(--fresh-green);
   margin-right:10px;
 }
 
@@ -60,14 +69,14 @@ section{
 
 .task-card{
   background:white;
-  border-left:6px solid #005B47;
+  border-left:6px solid var(--trad-green);
   padding:15px;
   margin-bottom:10px;
   border-radius:8px;
 }
 
 .task-card.important{
-  background:#ffd7d7;
+  background:var(--important-color);
 }
 
 .task-row{
@@ -77,16 +86,16 @@ section{
 }
 
 .status-btn.todo{
-  background:#f5d742;
+  background:var(--todo-color);
 }
 
 .status-btn.doing{
-  background:#4aa3ff;
+  background:var(--doing-color);
   color:white;
 }
 
 .complete-task{
-  background:#ddd;
+  background:var(--complete-color);
 }
 
 .modal{
@@ -176,12 +185,6 @@ textarea{
   height:220px;
 }
 
-.section-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
 .task-two-column{
   display:flex;
   gap:20px;
@@ -238,7 +241,7 @@ textarea{
 }
 
 .json-load-label{
-  background:#B3D056;
+  background:var(--fresh-green);
   padding:8px 14px;
   border-radius:6px;
   cursor:pointer;

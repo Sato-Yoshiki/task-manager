@@ -1,4 +1,4 @@
-[
+window.DEFAULT_TASKS = [
   {
     "id": "241fc3a6-9723-430c-a5be-764040b5f4b2",
     "title": "～の勉強",
@@ -6,9 +6,9 @@
     "time": "",
     "explain": "・～<div>・～</div>",
     "important": false,
-    "status": 2,
-    "complete": false,
-    "completedAt": null
+    "status": 3,
+    "complete": true,
+    "completedAt": "2026-06-08T05:52:03.664Z"
   },
   {
     "id": "a8282c65-801f-49bd-8594-e060cf3954b4",
@@ -22,24 +22,13 @@
     "completedAt": null
   },
   {
-    "id": "806521c9-eec7-45c7-90ef-3397e9ede6c1",
-    "title": "～との面談",
-    "deadline": "2026-06-02",
-    "time": "",
-    "explain": "Teamsリンク",
-    "important": true,
-    "status": 1,
-    "complete": false,
-    "completedAt": null
-  },
-  {
     "id": "2401dea3-460f-416f-a323-3525f36d03d1",
     "title": "hoge",
     "deadline": "",
     "time": "",
     "explain": "",
     "important": false,
-    "status": 2,
+    "status": 1,
     "complete": false,
     "completedAt": null
   },
@@ -64,5 +53,38 @@
     "status": 1,
     "complete": false,
     "completedAt": null
+  },
+  {
+    "id": "0e7bdac3-40b9-4710-9971-1256c449f3ef",
+    "title": "foohoge",
+    "deadline": "2026-06-18",
+    "time": "",
+    "explain": "",
+    "important": false,
+    "status": 3,
+    "complete": true,
+    "completedAt": "2026-06-08T04:13:52.934Z"
+  },
+  {
+    "id": "temp",
+    "title": "foohoge",
+    "deadline": "2026-06-18",
+    "time": "",
+    "explain": "",
+    "important": false,
+    "status": 2,
+    "complete": false,
+    "completedAt": null
+  },
+  {
+    "id": "05cd4137-3d92-40c0-ad7d-4d7a0ba4693e",
+    "title": "test",
+    "deadline": "2026-06-08",
+    "time": "14:14",
+    "explain": "",
+    "important": false,
+    "status": 3,
+    "complete": true,
+    "completedAt": "2026-06-08T05:54:06.636Z"
   }
-]
+];

@@ -1,84 +1,22 @@
-const STORAGE_KEY = "tasks";
-
 let tasks = [];
 let currentEditId = null;
 let currentDetailId = null;
 let confirmCallback = null;
 let fileHandle = null;
+let hasPermission = false;
 
 initializeFileSystem();
-
-document.getElementById("loadTasksJsonInput")
-  .onchange = async (e) => {
-
-  const file = e.target.files[0];
-
-  if(!file){
-    return;
-  }
-
-  try{
-
-    const text = await file.text();
-
-    const json = JSON.parse(text);
-
-    if(!Array.isArray(json)){
-      throw new Error("JSON配列ではありません");
-    }
-
-    tasks = json;
-
-    // localStorageへ保存
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(tasks)
-    );
-
-    renderAll();
-
-    alert("tasks.json を読み込みました");
-
-  }catch(err){
-
-    console.error(err);
-
-    alert(
-      "JSON読込失敗\n" +
-      err.message
-    );
-  }
-};
-
 loadTasks();
 
 function loadTasks(){
-
-  const data = localStorage.getItem(STORAGE_KEY);
-
-  if(data){
-
-    try{
-      tasks = JSON.parse(data);
-    }catch{
-      tasks = [];
-    }
-  }
-
+  tasks = window.DEFAULT_TASKS || [];
   renderAll();
 }
 
 async function saveTasks(){
-
-  const json = JSON.stringify(tasks, null, 2);
-
-  localStorage.setItem(
-    STORAGE_KEY,
-    json
-  );
-
-  await saveTasksToFile(json);
-
+  openModal("NowSavingModal");
+  await saveTasksToFile(tasks);
+  closeModal("NowSavingModal");
   renderAll();
 }
 
@@ -89,10 +27,59 @@ function renderAll(){
   renderCalendar();
 }
 
-function generateId(){
-  return crypto.randomUUID();
+async function initializeFileSystem() {
+
+  fileHandle = await loadHandle();
+
+  if (!fileHandle) {
+    console.log("初回起動");
+    return;
+  }
+
+  const options = {
+    mode: "readwrite"
+  };
+
+  const query_permission = await fileHandle.queryPermission(options);
+
+  console.log("permission:", query_permission);
 }
 
+async function saveTasksToFile(json){
+  try{
+    if(!fileHandle){
+
+      fileHandle = await window.showSaveFilePicker({
+
+        suggestedName: "tasks.js",
+
+        types: [
+          {
+            description: "JavaScript Files",
+            accept: {
+              "application/javascript": [".js"]
+            }
+          }
+        ]
+      });
+      await saveHandle(fileHandle);
+    }
+
+    const writable = await fileHandle.createWritable();
+    const content =
+      `window.DEFAULT_TASKS = ${JSON.stringify(json, null, 2)};`;
+
+    await writable.write(content);
+
+    await writable.close();
+
+  }catch(e){
+    console.error("保存失敗", e);
+  }
+}
+
+
+// モーダル制御
 function openModal(id){
   document.getElementById(id).classList.remove("hidden");
 }
@@ -101,6 +88,8 @@ function closeModal(id){
   document.getElementById(id).classList.add("hidden");
 }
 
+
+// タスク編集
 document.getElementById("addTaskBtn").onclick = () => {
   currentEditId = null;
 
@@ -110,6 +99,10 @@ document.getElementById("addTaskBtn").onclick = () => {
 
   openModal("taskModal");
 };
+
+function generateId(){
+  return crypto.randomUUID();
+}
 
 function clearTaskForm(){
   document.getElementById("taskTitle").value = "";
@@ -168,7 +161,8 @@ document.getElementById("saveTaskBtn").onclick = () => {
   closeModal("taskModal");
 };
 
-function renderDeadlineTasks(){
+// タスク表示
+function renderDeadlineTasks(){ // 期限ありタスクの表示
 
   const area = document.getElementById("deadlineTaskList");
 
@@ -221,7 +215,7 @@ function renderDeadlineTasks(){
   bindTaskEvents();
 }
 
-function renderNoDeadlineTasks(){
+function renderNoDeadlineTasks(){ // 期限なしタスクの表示
 
   const area = document.getElementById("noDeadlineTaskList");
 
@@ -253,7 +247,7 @@ function renderNoDeadlineTasks(){
   bindTaskEvents();
 }
 
-function renderCompleteTasks(){
+function renderCompleteTasks(){ // 完了タスクの表示
 
   const area = document.getElementById("completeTaskList");
 
@@ -292,6 +286,11 @@ function renderCompleteTasks(){
 
   bindTaskEvents();
 }
+
+document.getElementById("clearCompleteBtn").onclick = () => {
+  document.getElementById("completeSearch").value = "";
+  renderCompleteTasks();
+};
 
 function createTaskCard(task, hasDeadline, completed=false){
 
@@ -347,6 +346,7 @@ function createTaskCard(task, hasDeadline, completed=false){
   `;
 }
 
+// タスクステータス変更
 function bindTaskEvents(){
 
   document.querySelectorAll(".task-main").forEach(el => {
@@ -386,6 +386,7 @@ function bindTaskEvents(){
   });
 }
 
+// タスク詳細表示
 function showTaskDetail(id){
 
   currentDetailId = id;
@@ -416,6 +417,18 @@ function showTaskDetail(id){
 
   openModal("detailModal");
 }
+
+// タスク詳細モーダルの制御
+// モーダルの背景クリックで閉じる（保存処理がこれだけないため）
+const detailModal = document.getElementById("detailModal");
+
+detailModal.addEventListener("click", (event) => {
+
+  if (event.target === detailModal) {
+    closeModal("detailModal");
+  }
+
+});
 
 document.getElementById("closeDetailBtn").onclick = () => {
   closeModal("detailModal");
@@ -464,6 +477,7 @@ document.getElementById("deleteTaskBtn").onclick = () => {
   );
 };
 
+// 確認ダイアログ
 function showConfirm(message, callback){
 
   confirmCallback = callback;
@@ -490,6 +504,7 @@ document.getElementById("deadlineRange").onchange = renderDeadlineTasks;
 
 document.getElementById("completeSearch").oninput = renderCompleteTasks;
 
+// カレンダー表示
 function renderCalendar(){
 
   const calendarEl = document.getElementById("calendar");
@@ -512,20 +527,83 @@ function renderCalendar(){
 
         backgroundColor:
           task.complete
-            ? "#999"
+            ? "var(--complete-color)"
             : task.important
-              ? "#ff7b7b"
+              ? "var(--important-color)"
               : task.status === 1
-                ? "#f5d742"
-                : "#4aa3ff"
+                ? "var(--todo-color)"
+                : "var(--doing-color)"
       }))
   });
 
   calendar.render();
 }
 
-/* コード入力 */
+// IndexedDBを使用してファイルハンドルを保存
+async function saveHandle(handle) {
 
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction("files", "readwrite");
+
+    tx.objectStore("files")
+      .put(handle, "tasksFile");
+
+    tx.oncomplete = () => resolve();
+
+    tx.onerror = () => reject(tx.error);
+
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+async function loadHandle() {
+
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction("files", "readonly");
+
+    const request =
+      tx.objectStore("files").get("tasksFile");
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+function openDB() {
+
+  return new Promise((resolve, reject) => {
+
+    const request = indexedDB.open("TaskDB", 1);
+
+    request.onupgradeneeded = () => {
+
+      const db = request.result;
+
+      if (!db.objectStoreNames.contains("files")) {
+
+        db.createObjectStore("files");
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+
+    request.onerror = () => reject(request.error);
+  });
+}
+
+
+/* コード入力 */
 document.getElementById("codeInputBtn").onclick = () => {
   openModal("codeInputModal");
 };
@@ -565,7 +643,6 @@ document.getElementById("codeRegisterBtn").onclick = async () => {
       });
 
       if(exists){
-
         duplicateCount++;
         return;
       }
@@ -591,8 +668,20 @@ document.getElementById("codeRegisterBtn").onclick = async () => {
   }
 };
 
-/* コード抽出 */
+document.getElementById("jsonFileInput")
+  .onchange = async (e) => {
+  document.getElementById("codeInputArea").value = "";
 
+  const file = e.target.files[0];
+
+  if(!file) return;
+
+  const text = await file.text();
+
+  document.getElementById("codeInputArea").value = text;
+};
+
+/* コード抽出 */
 document.getElementById("codeExportBtn").onclick = () => {
 
   openModal("codeExportModal");
@@ -714,80 +803,4 @@ document.getElementById("downloadCodeBtn").onclick = () => {
   a.click();
 
   URL.revokeObjectURL(url);
-};
-
-document.getElementById("jsonFileInput")
-  .onchange = async (e) => {
-
-  const file = e.target.files[0];
-
-  if(!file) return;
-
-  const text = await file.text();
-
-  document.getElementById("codeInputArea").value = text;
-};
-
-async function initializeFileSystem(){
-
-  try{
-
-    const saved = localStorage.getItem("taskFileHandle");
-
-    if(saved){
-
-      // 復元不可なので再選択方式
-      console.log("以前のファイル情報あり");
-    }
-
-  }catch(e){
-
-    console.error(e);
-  }
-}
-
-async function saveTasksToFile(json){
-
-  try{
-
-    if(!fileHandle){
-
-      fileHandle = await window.showSaveFilePicker({
-
-        suggestedName: "tasks.json",
-
-        types: [
-          {
-            description: "JSON Files",
-            accept: {
-              "application/json": [".json"]
-            }
-          }
-        ]
-      });
-    }
-
-    const writable =
-      await fileHandle.createWritable();
-
-    await writable.write(json);
-
-    await writable.close();
-
-  }catch(e){
-
-    console.error("保存失敗", e);
-  }
-}
-
-document.getElementById("jsonFileInput")
-  .onchange = async (e) => {
-
-  const file = e.target.files[0];
-
-  if(!file) return;
-
-  const text = await file.text();
-
-  document.getElementById("codeInputArea").value = text;
 };

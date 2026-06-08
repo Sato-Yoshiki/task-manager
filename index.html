@@ -7,7 +7,8 @@
 
   <link rel="stylesheet" href="style.css"/>
 
-  <script src="app.js" defer></script>
+  <script src="tasks.js"></script>
+  <!-- <script src="app.js" defer></script> -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 </head>
 
@@ -15,27 +16,18 @@
 
 <header>
   <h1>Task Manager</h1>
-  <div>最初にタスクの追加や編集を行う場合はtasks.jsonを読込してください。読み込み完了のポップアップが表示されれば成功です。</div>
+  <div>タスク編集・追加を初めて行う場合、"tasks.js"を選択してください。選択処理を以後同ブラウザで省略したい場合、「常にアクセスを許可」を押してください。</div>
 
     <div class="top-buttons">
-        <label class="json-load-button">
-        tasks.json 読込
-        <input type="file"
-                id="loadTasksJsonInput"
-                accept=".json"
-                hidden>
-        </label>
         <button id="addTaskBtn">＋ タスク追加</button>
-        <button id="codeInputBtn">コード入力</button>
-        <button id="codeExportBtn">コード抽出</button>
+        <button id="codeInputBtn" class="hidden">コード入力</button>
+        <button id="codeExportBtn" class="hidden">コード抽出</button>
     </div>
 </header>
 
 <main>
-
   <section class="deadline-filter">
     <label>表示範囲：</label>
-
     <select id="deadlineRange">
       <option value="all" selected>すべて</option>
       <option value="week">1週間以内</option>
@@ -44,19 +36,16 @@
     </select>
   </section>
 
-    <div class="task-two-column">
+  <div class="task-two-column">
     <section class="task-column">
         <h2>期限ありタスク</h2>
         <div id="deadlineTaskList" class="scroll-list"></div>
     </section>
     <section class="task-column">
-        <div class="section-row">
         <h2>期限なしタスク</h2>
-        <!-- <button id="sortBtn">並び替え</button> -->
-        </div>
         <div id="noDeadlineTaskList" class="scroll-list"></div>
     </section>
-    </div>
+  </div>
 
   <section>
     <h2>カレンダー</h2>
@@ -65,21 +54,19 @@
 
   <section>
     <h2>完了済みタスク</h2>
-
-    <input type="text" id="completeSearch" placeholder="検索"/>
-
+    <div class="date-row">
+      <input type="text" id="completeSearch" placeholder="検索"/>
+      <button id="clearCompleteBtn">クリア</button>
+    </div>
     <div id="completeTaskList" class="complete-scroll"></div>
   </section>
-
 </main>
 
+<!-- モーダルウィンドウ -->
 <!-- タスク編集モーダル -->
 <div class="modal hidden" id="taskModal">
-
   <div class="modal-content large">
-
     <h2 id="modalTitle">タスク追加</h2>
-
     <div class="form-group">
       <label>タイトル *</label>
       <input type="text" id="taskTitle"/>
@@ -87,7 +74,6 @@
 
     <div class="form-group">
       <label>締切日</label>
-
       <div class="date-row">
         <input type="date" id="taskDeadline"/>
         <button id="clearDateBtn">クリア</button>
@@ -96,7 +82,6 @@
 
     <div class="form-group">
       <label>時間</label>
-
       <div class="date-row">
         <input type="time" id="taskTime"/>
         <button id="clearTimeBtn">クリア</button>
@@ -105,23 +90,16 @@
 
     <div class="form-group">
       <label>説明</label>
-
       <div class="editor-toolbar">
         <button onclick="document.execCommand('bold')"><b>B</b></button>
         <button onclick="document.execCommand('italic')"><i>I</i></button>
-
         <label class="color-picker-label">
         カラー変更：
         <input type="color"
                 title="文字色変更"
                 onchange="document.execCommand('foreColor', false, this.value)">
         </label>
-
-        <span class="editor-help">
-        ※ 太字・斜体・カラー変更可能
-        </span>
       </div>
-
       <div id="taskExplain"
            class="editor"
            contenteditable="true"></div>
@@ -134,7 +112,6 @@
 
     <div class="form-group">
       <label>状況</label>
-
       <select id="taskStatus">
         <option value="1">未着手</option>
         <option value="2">着手中</option>
@@ -150,81 +127,66 @@
   </div>
 </div>
 
-<!-- タスク詳細 -->
+<!-- タスク詳細モーダル -->
 <div class="modal hidden" id="detailModal">
-
   <div class="modal-content">
-
     <div id="taskDetailContent"></div>
-
     <div class="modal-buttons">
       <button id="editTaskBtn">編集</button>
       <button id="deleteTaskBtn">削除</button>
       <button id="closeDetailBtn">閉じる</button>
     </div>
-
   </div>
 </div>
 
 <!-- 確認モーダル -->
 <div class="modal hidden" id="confirmModal">
-
   <div class="modal-content">
-
     <p id="confirmMessage"></p>
-
     <div class="modal-buttons">
       <button id="confirmOkBtn">OK</button>
       <button id="confirmCancelBtn">キャンセル</button>
     </div>
+  </div>
+</div>
 
+<!-- タスク反映中モーダル -->
+<div class="modal hidden" id="NowSavingModal">
+  <div class="modal-content">
+    <div>変更保存中...</div>
   </div>
 </div>
 
 <!-- コード入力 -->
 <div class="modal hidden" id="codeInputModal">
-
   <div class="modal-content large">
-
     <h2>コード入力</h2>
-
     <input type="file"
        id="jsonFileInput"
        accept=".json"/>
-
     <textarea id="codeInputArea"></textarea>
-
     <div class="modal-buttons">
       <button id="codeRegisterBtn">登録</button>
       <button id="codeInputCancelBtn">キャンセル</button>
     </div>
-
   </div>
 </div>
 
 <!-- コード抽出 -->
 <div class="modal hidden" id="codeExportModal">
-
   <div class="modal-content large">
-
     <h2>コード抽出</h2>
-
     <input type="text" id="exportSearch" placeholder="検索"/>
-
     <div id="exportTaskList"></div>
-
     <textarea id="exportCodeArea" readonly></textarea>
-
     <div class="modal-buttons">
         <button id="copyCodeBtn">コピー</button>
-        <!-- <button id="downloadCodeBtn">JSON保存</button> -->
+        <button id="downloadCodeBtn">JSON保存</button>
         <button id="closeExportBtn">閉じる</button>
     </div>
-
   </div>
 </div>
 
 <script src="app.js"></script>
-
 </body>
 </html>
