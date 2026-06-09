@@ -112,6 +112,7 @@ function clearTaskForm(){
   document.getElementById("taskExplain").innerHTML = "";
   document.getElementById("taskImportant").checked = false;
   document.getElementById("taskStatus").value = "1";
+  document.getElementById("taskNotificationDateTime").value = "";
 }
 
 document.getElementById("clearDateBtn").onclick = () => {
@@ -201,7 +202,6 @@ document.getElementById("saveTaskBtn").onclick = () => {
 
   if(currentEditId){
     const idx = tasks.findIndex(t => t.id === currentEditId);
-
     tasks[idx] = task;
   }else{
     tasks.push(task);
@@ -506,6 +506,7 @@ document.getElementById("editTaskBtn").onclick = () => {
   document.getElementById("taskExplain").innerHTML = task.explain;
   document.getElementById("taskImportant").checked = task.important;
   document.getElementById("taskStatus").value = task.status;
+  document.getElementById("taskNotificationDateTime").value = task.notificationDateTime;
 
   closeModal("detailModal");
 

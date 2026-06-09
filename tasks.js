@@ -107,9 +107,21 @@ window.DEFAULT_TASKS = [
     "time": "",
     "explain": "",
     "important": false,
-    "status": 2,
-    "complete": false,
-    "completedAt": null,
+    "status": 3,
+    "complete": true,
+    "completedAt": "2026/6/9 13:49:55",
     "notificationDateTime": "2026-06-09T12:40"
+  },
+  {
+    "id": "2007d202-37f0-4f20-b5d1-c58d2ba0d85d",
+    "title": "remind",
+    "deadline": "",
+    "time": "",
+    "explain": "",
+    "important": false,
+    "status": 3,
+    "complete": true,
+    "completedAt": "2026/6/9 15:29:38",
+    "notificationDateTime": null
   }
 ];
