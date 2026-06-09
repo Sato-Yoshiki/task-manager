@@ -24,8 +24,10 @@ async function saveTasks(){
 function renderAll(){
   renderDeadlineTasks();
   renderNoDeadlineTasks();
-  renderCompleteTasks();
   renderCalendar();
+  renderCompleteTasks();
+  checkDeadlines();
+  checkNotifications();
 }
 
 async function initializeFileSystem() {
@@ -42,8 +44,6 @@ async function initializeFileSystem() {
   };
 
   const query_permission = await fileHandle.queryPermission(options);
-
-  console.log("permission:", query_permission);
 }
 
 async function saveTasksToFile(json){
@@ -130,13 +130,58 @@ document.getElementById("cancelTaskBtn").onclick = () => {
   closeModal("taskModal");
 };
 
+// バリデーション
+document.getElementById("taskDeadline").onchange = (e) => {
+  const selectedDateTime = new Date(e.target.value);
+
+  const now = new Date();
+  if (selectedDateTime < now) {
+    document.getElementById("deadlineWarning").textContent = "現在より後の日時が選択されています。";
+    document.getElementById("deadlineWarning").classList.remove("hidden");
+  }else{
+    document.getElementById("deadlineWarning").classList.add("hidden");
+  }
+};
+
+document.getElementById("taskNotificationDateTime").onchange = (e) => {
+  const selectedDateTime = new Date(e.target.value);
+
+  const now = new Date();
+  if (selectedDateTime < now) {
+    document.getElementById("notificationWarning").textContent = "選択された日時が現在より前になっています。未来の日時を選択してください。";
+    document.getElementById("notificationWarning").classList.remove("hidden");
+  }else{
+      document.getElementById("notificationWarning").classList.add("hidden");
+  }
+  const deadlineValue = document.getElementById("taskDeadline").value;
+  if (deadlineValue) {
+    const deadlineDate = new Date(deadlineValue);
+    if (selectedDateTime > deadlineDate) {
+      document.getElementById("notificationWarning").textContent = "締切日時より後の日時が選択されています。";
+      document.getElementById("notificationWarning").classList.remove("hidden");
+    }else{
+      document.getElementById("notificationWarning").classList.add("hidden");
+    }
+  }
+};
+
+// タスク保存処理
 document.getElementById("saveTaskBtn").onclick = () => {
 
   const title = document.getElementById("taskTitle").value.trim();
+  const notificationDateTime = document.getElementById("taskNotificationDateTime").value;
 
   if(!title){
     alert("タイトルは必須です");
     return;
+  }
+  if(notificationDateTime){
+    const selectedDateTime = new Date(notificationDateTime);
+    const now = new Date();
+    if (selectedDateTime < now) {
+      alert("通知日時は現在より後の日時を選択してください");
+      return;
+    }
   }
 
   const task = {
@@ -149,7 +194,7 @@ document.getElementById("saveTaskBtn").onclick = () => {
     status: Number(document.getElementById("taskStatus").value),
     complete: Number(document.getElementById("taskStatus").value) === 3,
     completedAt: Number(document.getElementById("taskStatus").value) === 3
-      ? new Date().toISOString()
+      ? new Date().toLocaleString()
       : null,
     notificationDateTime: document.getElementById("taskNotificationDateTime").value || null
   };
@@ -383,7 +428,7 @@ function bindTaskEvents(){
         () => {
           task.status = 3;
           task.complete = true;
-          task.completedAt = new Date().toISOString();
+          task.completedAt = new Date().toLocaleString();
 
           saveTasks();
         }
@@ -419,6 +464,11 @@ function showTaskDetail(id){
     </p>
 
     <div>${task.explain}</div>
+    ${
+      task.notificationDateTime
+        ? `<div>通知日時：${new Date(task.notificationDateTime).toLocaleString()}</div>`
+        : ""
+    }
   `;
 
   openModal("detailModal");
@@ -608,26 +658,61 @@ function openDB() {
   });
 }
 
-// タスク通知機能
-function checkNotifications(){
+// 締切超過通知機能
+function checkDeadlines(){
+  let list = tasks.filter(t =>
+    t.deadline &&
+    !t.complete
+  );
 
-  const notificationTasks = [];
+  const now = new Date();
+  let passedTasks = list.filter(t =>
+    t.deadline < now.toISOString()
+  );
+
+  if(passedTasks.length > 0){
+    passedTasks.sort((a, b) => {
+      const dateA = new Date(`${a.deadline} ${a.time || "00:00"}`);
+      const dateB = new Date(`${b.deadline} ${b.time || "00:00"}`);
+      return dateA - dateB;
+    });
+    alert(
+      "以下のタスクの締切日時が過ぎています\n" +
+      passedTasks.map(t => t.title).join("\n")
+    );
+  }
+}
+
+// リマインダー機能
+function checkNotifications(){
 
   let list = tasks.filter(t =>
     t.notificationDateTime &&
     !t.complete
   );
-
-  
-  list.sort((a, b) => {
+  const now = new Date();
+  let notificationTime = new Date(now.getTime() + 5 * 60 * 60 * 1000); // 現在時刻の5時間後までのタスクを通知対象とする
+  const notificationTasks = list.filter(t =>
+    t.notificationDateTime <= notificationTime.toLocaleString()
+  ).sort((a, b) => {
     return new Date(a.notificationDateTime) - new Date(b.notificationDateTime);
   });
 
-  const now = new Date();
-  passedTasks = list.filter(t =>
-    t.notificationDateTime <= now.toISOString()
-  );
-  
+  if(notificationTasks.length > 0){
+    const nextTask = notificationTasks[0];
+    const notificationDate = new Date(nextTask.notificationDateTime);
+    const timeUntilNotification = (notificationDate.getTime() - now.getTime())<0 ? 0 : (notificationDate.getTime() - now.getTime());
+    if(timeUntilNotification !== 0){
+      window.open("./notification.html","_blank");
+    }
+    setTimeout(() => {
+      localStorage.setItem(
+        "notificationTask",
+        JSON.stringify(notificationTasks)
+      );
+      window.open("./notification.html","_blank");
+    }, timeUntilNotification);
+  }
 }
 
 /* コード入力 */

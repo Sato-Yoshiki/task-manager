@@ -252,6 +252,11 @@ textarea{
   width: 80%;
 }
 
+.warning{
+  color: red;
+  font-size: 12px;
+}
+
 @media (max-width: 900px){
 
   .task-two-column{

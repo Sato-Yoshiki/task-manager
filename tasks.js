@@ -6,9 +6,10 @@ window.DEFAULT_TASKS = [
     "time": "",
     "explain": "・～<div>・～</div>",
     "important": false,
-    "status": 3,
-    "complete": true,
-    "completedAt": "2026-06-08T05:52:03.664Z"
+    "status": 1,
+    "complete": false,
+    "completedAt": null,
+    "notificationDateTime": null
   },
   {
     "id": "a8282c65-801f-49bd-8594-e060cf3954b4",
@@ -86,5 +87,29 @@ window.DEFAULT_TASKS = [
     "status": 3,
     "complete": true,
     "completedAt": "2026-06-08T05:54:06.636Z"
+  },
+  {
+    "id": "4a17e746-4db4-4aba-a4ec-357b14fd05fe",
+    "title": "hoge",
+    "deadline": "2026-05-08",
+    "time": "",
+    "explain": "",
+    "important": false,
+    "status": 3,
+    "complete": true,
+    "completedAt": "2026-06-09T03:38:45.892Z",
+    "notificationDateTime": null
+  },
+  {
+    "id": "14ccd774-e08f-42fa-9c50-51ec9d0b6542",
+    "title": "remider",
+    "deadline": "",
+    "time": "",
+    "explain": "",
+    "important": false,
+    "status": 2,
+    "complete": false,
+    "completedAt": null,
+    "notificationDateTime": "2026-06-09T12:40"
   }
 ];
